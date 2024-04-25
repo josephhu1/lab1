@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 
 void handle_error(const char* msg);
+void wait_child(const int status);
 int first_program(char* program);
 void last_program(char* program, int read);
 int regular_case(char* program, int read);
@@ -34,6 +35,15 @@ void handle_error(const char* msg) {
     exit(errno);
 }
 
+void wait_child(const int status) {
+    wait(&status); // wait until child to change state
+    if (WIFEXITED(status)) {
+        int exit_status = WEXITSTATUS(status);
+        if (exit_status != 0)
+            exit(exit_status);
+    }
+}
+
 int first_program(char* program) {
     int fildes[2];
     if (pipe(fildes) == -1)
@@ -51,12 +61,7 @@ int first_program(char* program) {
             handle_error("execlp: process unable to be created");
         default:
             // int status; // delete!!
-            wait(&status); // wait until child to change state
-            if (WIFEXITED(status)) {
-                int exit_status = WEXITSTATUS(status);
-                if (exit_status != 0)
-                    exit(exit_status);
-            }
+            wait_child(status);
             close(fildes[1]);
             return fildes[0]; // get the pipe's read end
     }
@@ -76,12 +81,7 @@ void last_program(char* program, int read) {
             handle_error("execlp: process unable to be created");
         default:
             // int status; // delete!!
-            wait(&status); // wait until child to change state
-            if (WIFEXITED(status)) {
-                int exit_status = WEXITSTATUS(status);
-                if (exit_status != 0)
-                    exit(exit_status);
-            }
+            wait_child(status);
             close(read); // right place?
     }
 }
@@ -105,12 +105,7 @@ int regular_case(char* program, int read) {
             handle_error("execlp: process unable to be created");
         default:
             // int status; // delete!!
-            wait(&status); // wait until child to change state
-            if (WIFEXITED(status)) {
-                int exit_status = WEXITSTATUS(status);
-                if (exit_status != 0)
-                    exit(exit_status);
-            }
+            wait_child(status);
             close(read); // right place?
             close(fildes[1]); // right place?
             return fildes[0];
