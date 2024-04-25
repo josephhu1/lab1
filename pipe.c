@@ -6,7 +6,7 @@
 #include <sys/wait.h>
 
 void handle_error(const char* msg);
-void wait_child(const int status);
+void wait_child(int status);
 int first_program(char* program);
 void last_program(char* program, int read);
 int regular_case(char* program, int read);
@@ -35,7 +35,7 @@ void handle_error(const char* msg) {
     exit(errno);
 }
 
-void wait_child(const int status) {
+void wait_child(int status) {
     wait(&status); // wait until child to change state
     if (WIFEXITED(status)) {
         int exit_status = WEXITSTATUS(status);
@@ -60,9 +60,8 @@ int first_program(char* program) {
             execlp(program, program, NULL); // replace current process w/ new process
             handle_error("execlp: process unable to be created");
         default:
-            // int status; // delete!!
-            wait_child(status);
             close(fildes[1]);
+            wait_child(status);
             return fildes[0]; // get the pipe's read end
     }
     return -1;
@@ -80,9 +79,8 @@ void last_program(char* program, int read) {
             execlp(program, program, NULL);
             handle_error("execlp: process unable to be created");
         default:
-            // int status; // delete!!
+            close(read);
             wait_child(status);
-            close(read); // right place?
     }
 }
 
@@ -104,10 +102,9 @@ int regular_case(char* program, int read) {
             execlp(program, program, NULL);
             handle_error("execlp: process unable to be created");
         default:
-            // int status; // delete!!
+            close(read);
+            close(fildes[1]);
             wait_child(status);
-            close(read); // right place?
-            close(fildes[1]); // right place?
             return fildes[0];
     }
     return -1;
