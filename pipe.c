@@ -56,6 +56,7 @@ int first_program(char* program) {
             handle_error("process creation failure");
         case 0:
             dup2(fildes[1], STDOUT_FILENO); // stdout points to pipe's write end
+            close(fildes[0]); // pipe's read end not needed for child process
             close(fildes[1]); // close the file descriptor
             execlp(program, program, NULL); // replace current process w/ new process
             handle_error("execlp: process unable to be created");
@@ -97,7 +98,7 @@ int regular_case(char* program, int read) {
         case 0:
             dup2(read, STDIN_FILENO);
             dup2(fildes[1], STDOUT_FILENO); 
-            close(fildes[0]); // pipe's read end not needed for child process
+            close(fildes[0]);
             close(fildes[1]);
             execlp(program, program, NULL);
             handle_error("execlp: process unable to be created");
