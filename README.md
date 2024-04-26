@@ -1,17 +1,25 @@
-## UID: 123456789
+## UID: 105955662
 
 ## Pipe Up
 
-One sentence description
+This program will simulate the pipe operator in shells and execute programs as new processes
+with a pipe between two subsequent processes.
 
 ## Building
 
-Explain briefly how to build your program
+To build the program, use:
+$ make
 
 ## Running
 
-Show an example run of your program, using at least two additional arguments, and what to expect
+Here is an example run of the program:
+$ ./pipe date cat wc
+1   7   32
+
+The program should produce the same output as:
+$ date | cat | wc
 
 ## Cleaning up
 
-Explain briefly how to clean up all binary files
+To clean up all binary files, use:
+$ make clean
