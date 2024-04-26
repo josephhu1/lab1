@@ -6,7 +6,7 @@
 #include <sys/wait.h>
 
 void handle_error(const char* msg);
-void wait_child(int status);
+void wait_child();
 int first_program(char* program);
 void last_program(char* program, int read);
 int regular_case(char* program, int read);
@@ -35,7 +35,8 @@ void handle_error(const char* msg) {
     exit(errno);
 }
 
-void wait_child(int status) {
+void wait_child() {
+    int status;
     wait(&status); // wait until child to change state
     if (WIFEXITED(status)) {
         int exit_status = WEXITSTATUS(status);
@@ -50,7 +51,6 @@ int first_program(char* program) {
         handle_error("piping error");
     
     pid_t pid = fork();
-    int status;
     switch (pid) {
         case -1:
             handle_error("process creation failure");
@@ -62,7 +62,7 @@ int first_program(char* program) {
             handle_error("execlp: process unable to be created");
         default:
             close(fildes[1]);
-            wait_child(status);
+            wait_child();
             return fildes[0]; // get the pipe's read end
     }
     return -1;
@@ -70,7 +70,6 @@ int first_program(char* program) {
 
 void last_program(char* program, int read) {
     pid_t pid = fork();
-    int status;
     switch (pid) {
         case -1:
             handle_error("process creation failure");
@@ -81,7 +80,7 @@ void last_program(char* program, int read) {
             handle_error("execlp: process unable to be created");
         default:
             close(read);
-            wait_child(status);
+            wait_child();
     }
 }
 
@@ -91,7 +90,6 @@ int regular_case(char* program, int read) {
         handle_error("piping error");
     
     pid_t pid = fork();
-    int status;
     switch (pid) {
         case -1:
             handle_error("process creation failure");
@@ -105,7 +103,7 @@ int regular_case(char* program, int read) {
         default:
             close(read);
             close(fildes[1]);
-            wait_child(status);
+            wait_child();
             return fildes[0];
     }
     return -1;
