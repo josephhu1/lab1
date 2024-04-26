@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
     }
     else if (argc == 2) { // 1 process: pipe is not needed
         execlp(argv[1], argv[1], NULL);
+        handle_error("execlp: process unable to be created");
     }
     else { // > 1 process
         int read;
